@@ -4,8 +4,8 @@ function printCoupledAnalysis()
     set(groot,'defaultLegendInterpreter','latex');
     
     % For the Newmark-Beta Method
-    beta=1/4;
-    gamma=1/2;
+    beta = 1/4;
+    gamma = 1/2;
     
     % Air density
     rho = 1.20;
@@ -270,15 +270,15 @@ function printCoupledAnalysis()
     % Plot of forces
     figure();
     subplot(2,1,1); hold on; grid on; box on; ax = gca; ax.GridLineStyle = ':'; ax.GridAlpha = 1;
-    plot(timeVec, results.FL, '-k')
+%     plot(timeVec, results.FL, '-k')
+    plot(timeVec, P(idx, 1), '-k')
     xlabel('$t$ [s]', 'Interpreter', 'latex')
     ylabel('$F_{L}$ [-]', 'Interpreter', 'latex')
-%     ytickformat('%1.2f');
     subplot(2,1,2); hold on; grid on; box on; ax = gca; ax.GridLineStyle = ':'; ax.GridAlpha = 1;
-    plot(timeVec, results.FM, '-k')
+%     plot(timeVec, results.FM, '-k')
+    plot(timeVec, P(idx, 2), '-k')
     xlabel('$t$ [s]', 'Interpreter', 'latex')
     ylabel('$F_{M}$ [-]', 'Interpreter', 'latex')
-%     ytickformat('%1.3f');
     if savePath ~= 0
         saveStr = sprintf('%s\\coupledAnalysisForces', savePath);
         PaperPos = get(gcf,'PaperPosition'); PaperPos(3) = 16; PaperPos(4) = 10;
@@ -292,12 +292,10 @@ function printCoupledAnalysis()
     plot(timeVec, results.DH, '-k')
     xlabel('$t$ [s]', 'Interpreter', 'latex')
     ylabel('$h$ [m]', 'Interpreter', 'latex')
-%     ytickformat('%1.2f');
     subplot(2,1,2); hold on; grid on; box on; ax = gca; ax.GridLineStyle = ':'; ax.GridAlpha = 1;
     plot(timeVec, results.DP, '-k')
     xlabel('$t$ [s]', 'Interpreter', 'latex')
     ylabel('$\alpha$ [rad]', 'Interpreter', 'latex')
-%     ytickformat('%1.3f');
     if savePath ~= 0
         saveStr = sprintf('%s\\coupledAnalysisDisplacements', savePath);
         PaperPos = get(gcf,'PaperPosition'); PaperPos(3) = 16; PaperPos(4) = 10;
