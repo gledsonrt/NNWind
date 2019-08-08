@@ -24,12 +24,12 @@ function printSERandomDisp()
     dispHeader()
     disp('Select the network model for SE forces in the heave DOF...')
     [fileH, pathH] = uigetfile('*.mat', 'Select the network model for SE forces in the heave DOF.');
-    if fileH ~= 0; netHeave = load([pathH fileH]); else; error('Invalid model file.'); end
+    if fileH ~= 0; netHeave = load([pathH fileH]); else; return; end
     
     dispHeader()
     disp('Select the network model for SE forces in the pitch DOF...')
     [fileP, pathP] = uigetfile('*.mat', 'Select the network model for SE forces in the pitch DOF.');
-    if fileP ~= 0; netPitch = load([pathP fileP]); else; error('Invalid model file.'); end
+    if fileP ~= 0; netPitch = load([pathP fileP]); else; return; end
     
     % Check the models
     flags.Check = 1;

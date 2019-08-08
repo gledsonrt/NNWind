@@ -21,7 +21,7 @@ function printBRandomDisp()
     dispHeader()
     disp('Select the network model for the buffeting forces...')
     [file, path] = uigetfile('*.mat', 'Select the network model for the buffeting forces.');
-    if file ~= 0; netB = load([path file]); else; error('Invalid model file.'); end
+    if file ~= 0; netB = load([path file]); else; return; end
     if ~(strcmp(netB.props.modelType, 'Buffeting')); error('Invalid model file.'); end
     
     % Load the data for the random displacement

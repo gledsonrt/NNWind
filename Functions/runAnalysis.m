@@ -19,13 +19,18 @@ function runAnalysis()
             case 2
                 % In case we just got the derivatives, we don't need to
                 % load them from file...
-                if ~exist('derivs', 'var')
+                if ~exist('derivs', 'var') || isnan(derivs)
                     dispHeader()
                     disp('Select a derivative result file...')
                     [file, path] = uigetfile('*.mat', 'Select a derivative result file.');
-                    if file ~= 0; derivs = load([path file]); derivs = derivs.results.derivatives; end
+                    if file ~= 0
+                        derivs = load([path file]); 
+                        derivs = derivs.results.derivatives; 
+                        printFlutterAnalysis(derivs);
+                    end
+                else
+                    printFlutterAnalysis(derivs);
                 end
-                printFlutterAnalysis(derivs);
             case 3
                 printSERandomDisp()
             case 4
