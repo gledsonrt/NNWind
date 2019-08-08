@@ -225,7 +225,7 @@ function printCoupledAnalysis()
         end
                        
         % Calculate forces and store results
-        P(i,1) = (SE_L_H(i) + SE_L_P(i))*(1/2*rho*U*U*B) - (B_L(i))*(1/2*rho*U*U*B);
+        P(i,1) = -(SE_L_H(i) + SE_L_P(i))*(1/2*rho*U*U*B) - (B_L(i))*(1/2*rho*U*U*B);
         P(i,2) = (SE_M_H(i) + SE_M_P(i))*(1/2*rho*U*U*B*B) + (B_M(i))*(1/2*rho*U*U*B*B);
         
         % Integrate next time-steps
@@ -270,15 +270,13 @@ function printCoupledAnalysis()
     % Plot of forces
     figure();
     subplot(2,1,1); hold on; grid on; box on; ax = gca; ax.GridLineStyle = ':'; ax.GridAlpha = 1;
-%     plot(timeVec, results.FL, '-k')
-    plot(timeVec, P(idx, 1), '-k')
+    plot(timeVec, results.FL./1000, '-k')
     xlabel('$t$ [s]', 'Interpreter', 'latex')
-    ylabel('$F_{L}$ [-]', 'Interpreter', 'latex')
+    ylabel('$F_{L}$ k[N]', 'Interpreter', 'latex')
     subplot(2,1,2); hold on; grid on; box on; ax = gca; ax.GridLineStyle = ':'; ax.GridAlpha = 1;
-%     plot(timeVec, results.FM, '-k')
-    plot(timeVec, P(idx, 2), '-k')
+    plot(timeVec, results.FM./1000, '-k')
     xlabel('$t$ [s]', 'Interpreter', 'latex')
-    ylabel('$F_{M}$ [-]', 'Interpreter', 'latex')
+    ylabel('$F_{M}$ [kNm]', 'Interpreter', 'latex')
     if savePath ~= 0
         saveStr = sprintf('%s\\coupledAnalysisForces', savePath);
         PaperPos = get(gcf,'PaperPosition'); PaperPos(3) = 16; PaperPos(4) = 10;
