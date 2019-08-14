@@ -134,6 +134,9 @@ function printCoupledAnalysis()
     netHeave.props.net.trainPerc = 1;
     netPitch.props.net.trainPerc = 1;
     
+    % Is the data within the training range?
+    checkPredictionRange(rndDisp, netB.props)
+    
     % The structural parameters are rearranged
     M = [m I];
     F = [fh fa];

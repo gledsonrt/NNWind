@@ -51,6 +51,9 @@ function printBRandomDisp()
         error('Invalid dataset file.');
     end
     
+    % Is the data within the training range?
+    checkPredictionRange(rndDisp, netB.props)
+    
     % We don't need any validation data for the prediction
     netB.props.net.trainPerc = 1;
     

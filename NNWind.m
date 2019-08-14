@@ -20,7 +20,7 @@ function NNWind(varargin)
         disp('   #2 Evaluate existing network model');   
         disp('   #3 Run analysis');   
         disp('   #0 Exit');
-        flags.mainMenu = input(strcat('Selection [', num2str(flags.mainMenu), ']: #'));
+        flags.mainMenu = input(['Selection [', num2str(flags.mainMenu), ']: #']);
         if isempty(flags.mainMenu); flags.mainMenu = 1; end
         switch flags.mainMenu
             case 1

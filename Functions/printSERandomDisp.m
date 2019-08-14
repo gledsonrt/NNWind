@@ -80,6 +80,10 @@ function printSERandomDisp()
     dataP.D = rndDisp.DP;
     dataP.V = rndDisp.VP;
     
+    % Is the data within the training range?
+    checkPredictionRange(dataH, netHeave.props)
+    checkPredictionRange(dataP, netPitch.props)
+    
     % We don't need any validation data for the prediction
     netHeave.props.net.trainPerc = 1;
     netPitch.props.net.trainPerc = 1;
