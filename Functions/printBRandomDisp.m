@@ -155,10 +155,11 @@ function printBRandomDisp()
         set(gca, 'XMinorGrid','off', 'YMinorGrid','off')
         set(gca, 'YScale', 'log')
         set(gca, 'XScale', 'log')
-        plot(fVec.*(2*pi*netB.props.struct.B/netB.props.wind.U), psd_QS.*(fVec/var(rndDisp.V(1:length(timeVec)).*(pi/netB.props.wind.U))), '-', 'Color', [1 1 1 1].*0.2, 'LineWidth', 0.6); 
-        plot(fVec.*(2*pi*netB.props.struct.B/netB.props.wind.U), psd_NN.*(fVec/var(predVecCL)), '-k', 'LineWidth', 0.4);
+        plot(fVec.*(2*pi*netB.props.struct.B/netB.props.wind.U), psd_QS.*(fVec/var(rndDisp.V(1:length(timeVec)).*(pi/netB.props.wind.U))), '-', 'Color', [1 1 1 1].*0.2, 'LineWidth', 0.6, 'DisplayName', 'QS Model'); 
+        plot(fVec.*(2*pi*netB.props.struct.B/netB.props.wind.U), psd_NN.*(fVec/var(predVecCL)), '-k', 'LineWidth', 0.4, 'DisplayName', 'Prediction');
         xlabel('$K$ [-]', 'interpreter', 'latex')
         ylabel('$fS_{ww,C_L}/\sigma^2_{C_L}$ [-]', 'interpreter', 'latex')
+        legend('Location', 'best')
         
         % Repeat for the moment 
         [~, psd_QS, ~, ~] = PSD(rndDisp.V(1:length(timeVec)).*(0.25*pi/netB.props.wind.U), 1/Fs);
@@ -167,10 +168,11 @@ function printBRandomDisp()
         set(gca, 'XMinorGrid','off', 'YMinorGrid','off')
         set(gca, 'YScale', 'log')
         set(gca, 'XScale', 'log')
-        plot(fVec.*(2*pi*netB.props.struct.B/netB.props.wind.U), psd_QS.*(fVec/var(rndDisp.V(1:length(timeVec)).*(0.25*pi/netB.props.wind.U))), '-', 'Color', [1 1 1 1].*0.2, 'LineWidth', 0.6); 
-        plot(fVec.*(2*pi*netB.props.struct.B/netB.props.wind.U), psd_NN.*(fVec/var(predVecCM)), '-k', 'LineWidth', 0.4);
+        plot(fVec.*(2*pi*netB.props.struct.B/netB.props.wind.U), psd_QS.*(fVec/var(rndDisp.V(1:length(timeVec)).*(0.25*pi/netB.props.wind.U))), '-', 'Color', [1 1 1 1].*0.2, 'LineWidth', 0.6, 'DisplayName', 'QS Model'); 
+        plot(fVec.*(2*pi*netB.props.struct.B/netB.props.wind.U), psd_NN.*(fVec/var(predVecCM)), '-k', 'LineWidth', 0.4, 'DisplayName', 'Prediction');
         xlabel('$K$ [-]', 'interpreter', 'latex')
         ylabel('$fS_{ww,C_M}/\sigma^2_{C_M}$ [-]', 'interpreter', 'latex')
+        legend('Location', 'best')
         
         if savePath ~= 0
             saveStr = sprintf('%s\\rndDisplacementResults_PSD', savePath);
