@@ -162,9 +162,6 @@ function printCoupledAnalysis()
     h = waitbar(0,'Running analysis...'); % Progress bar
     set(findall(h,'type','text'),'Interpreter','none');
     
-    % Update wind speed for buffeting normalization
-    buffProps = netB.props; buffProps.wind.U = U;
-    
     % Main loop
     i_0 = ceil(netB.props.net.winLen*netB.props.wind.Nsteps)+1;
     for i = i_0:minLen
@@ -174,7 +171,7 @@ function printCoupledAnalysis()
         dataB.V = rndDisp.V(initB:i, 1); dataB.A = rndDisp.A(initB:i, 1);
         
         % Normalize and arrange into prediction format
-        [~, dataBNorm] = normalizeData(buffProps, dataB, false);
+        [~, dataBNorm] = normalizeData(netB.props, dataB, false);
         tempBIn = {[dataBNorm.V dataBNorm.A]'};
         
         % predict the coefficients
@@ -210,6 +207,7 @@ function printCoupledAnalysis()
         dataSE.D = UVec(initSE:i, 2); dataSE.V = UVecDot(initSE:i, 2);
         
         % Normalize and arrange into prediction format
+        normProps = netPitch.props; normProps.wind.U = U;
         [~, dataSEPNorm] = normalizeData(netPitch.props, dataSE, false);
         tempSEPIn = {[dataSEPNorm.D dataSEPNorm.V]'};
         

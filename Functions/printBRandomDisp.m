@@ -113,10 +113,14 @@ function printBRandomDisp()
         save([saveStr '.mat'], 'results')
     end
     
+    % Calculate the Quasi-Steady response
+    QSCL = rndDisp.V(1:length(timeVec)).*(pi/netB.props.wind.U).*(netB.props.wind.U/netB.props.wind.oldU);
+    QSCM = rndDisp.V(1:length(timeVec)).*(0.25*pi/netB.props.wind.U).*(netB.props.wind.U/netB.props.wind.oldU);
+    
     % Now plot the resulting CM and CL, in heave
     figure();
     subplot(2,1,1); hold on; grid on; box on; ax = gca; ax.GridLineStyle = ':'; ax.GridAlpha = 1;
-    plot(timeVec, rndDisp.V(1:length(timeVec)).*(pi/netB.props.wind.U), '-', 'Color', [1 1 1 1].*0.2, 'DisplayName', 'QS Model')
+    plot(timeVec, QSCL, '-', 'Color', [1 1 1 1].*0.2, 'DisplayName', 'QS Model')
     plot(timeVec, predVecCL, '-k', 'DisplayName', 'Prediction')
     if ~isempty(Fs) 
         xlabel('$t$ [s]', 'Interpreter', 'latex')
@@ -127,7 +131,7 @@ function printBRandomDisp()
     legend('Location', 'best')
     ytickformat('%1.2f');
     subplot(2,1,2); hold on; grid on; box on; ax = gca; ax.GridLineStyle = ':'; ax.GridAlpha = 1;
-    plot(timeVec, rndDisp.V(1:length(timeVec)).*(0.25*pi/netB.props.wind.U), '-', 'Color', [1 1 1 1].*0.2, 'DisplayName', 'QS Model')
+    plot(timeVec, QSCM, '-', 'Color', [1 1 1 1].*0.2, 'DisplayName', 'QS Model')
     plot(timeVec, predVecCM, '-k', 'DisplayName', 'Prediction')
     if ~isempty(Fs) 
         xlabel('$t$ [s]', 'Interpreter', 'latex')
