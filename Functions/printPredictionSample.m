@@ -28,12 +28,14 @@ function printPredictionSample(net, props, path)
     if strcmp(props.modelType, 'SelfExcited')
         [data, newProps] = getSEIOPairs(newProps);
     else
+        newProps.wind.Nsteps = 500;
+        newProps.wind.deltaT = (props.struct.B*newProps.wind.vrs)/(props.wind.U*newProps.wind.Nsteps);
         [data, newProps] = getBIOPairs(newProps);
     end            
     
     % Now normalize data and arrange into training format
     [newProps, dataNorm] = normalizeData(newProps, data, false);
-    [In, ~] = prepareTrainingData(dataNorm, newProps, false);
+    [In, ~] = prepareTrainingData(dataNorm, props, false);
     
     % Make the predictions and organize the results
     preds = predict(net, In); 
@@ -45,8 +47,8 @@ function printPredictionSample(net, props, path)
     end
     
     % Now de-normalize everything
-    predVecCL = (predVecCL.*sum(abs(props.wind.normCL)))-abs(props.wind.normCL(1));
-    predVecCM = (predVecCM.*sum(abs(props.wind.normCM)))-abs(props.wind.normCM(1));
+    predVecCL = ((predVecCL.*sum(abs(props.wind.normCL)))-abs(props.wind.normCL(1)));
+    predVecCM = ((predVecCM.*sum(abs(props.wind.normCM)))-abs(props.wind.normCM(1)));
     
     % Account for lost values due to moving window
     idx = length(data.CL)-length(predVecCL)+1:length(data.CL);

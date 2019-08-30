@@ -3,6 +3,14 @@ function [props, dataNorm] = normalizeData(props, data, genNorm)
     
     dispHeader()
     disp('Normalizing IO pairs...')
+    
+    % If its buffeting, then we train based on the normalized valocity
+    if strcmp(props.modelType, 'Buffeting')
+        for i = 1:length(data)
+            data(i).V = data(i).V./props.wind.U;
+            data(i).A = props.wind.deltaT.*(data(i).A./props.wind.U);
+        end
+    end
 
     % Should we generate the minimum and maximum points as well?
     % This is set to false during predictions...

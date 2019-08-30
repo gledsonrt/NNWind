@@ -47,8 +47,8 @@ function printTrainingQualityEvaluation(net, props, path)
                 end            
 
                 % Normalize data and put into NN format
-                [tempProps, dataNorm] = normalizeData(tempProps, data, false);
-                [In, ~] = prepareTrainingData(dataNorm, tempProps, false);
+                [~, dataNorm] = normalizeData(tempProps, data, false);
+                [In, ~] = prepareTrainingData(dataNorm, props, false);
 
                 % Make the predictions and re-organize
                 preds = predict(net, In); 
@@ -73,8 +73,8 @@ function printTrainingQualityEvaluation(net, props, path)
                 idx = length(data.CL)-length(predVecCL)+1:length(data.CL);
 
                 % Calculate and store the results of the R2
-                R2VecCL(i,j) = 1 - sum((data.CL(idx)-predVecCL').^2)/sum((data.CL(idx) - mean(data.CL(idx))).^2);
-                R2VecCM(i,j) = 1 - sum((data.CM(idx)-predVecCM').^2)/sum((data.CM(idx) - mean(data.CM(idx))).^2);
+                R2VecCL(i,j) = max([1 - sum((data.CL(idx)-predVecCL').^2)/sum((data.CL(idx) - mean(data.CL(idx))).^2) 0]);
+                R2VecCM(i,j) = max([1 - sum((data.CM(idx)-predVecCM').^2)/sum((data.CM(idx) - mean(data.CM(idx))).^2) 0]);
 
                 % And update the progress bar
                 waitbar(c/totSamples, h, sprintf('Evaluating cases: %2.1f%% done',c/totSamples*100));

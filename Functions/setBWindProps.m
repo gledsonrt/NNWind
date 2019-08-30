@@ -1,21 +1,6 @@
 function props = setBWindProps(props)
     % Sets up wind properties for buffeting
     
-    % Default wind values
-    if not(isfield(props, 'wind'))
-        props.wind.vrs = logspace(log10(0.02), log10(50), 50);
-        props.wind.amplitudes = [1:5];
-        props.wind.samplingFreq = 200;
-        props.wind.deltaT = 1/props.wind.samplingFreq;
-        props.wind.Nsteps = 500;
-        props.wind.movType = 'H';
-        props.wind.U = 20;
-    end
-    
-    % Default network values
-    if ~isfield(props, 'net'); props.net = struct; end
-    if ~isfield(props.net, 'winLen'); props.net.winLen = 0.1; end
-    
     % Default structural values (Great Belt East)
     if not(isfield(props, 'struct'))
         props.struct.m = 22740;
@@ -26,6 +11,22 @@ function props = setBWindProps(props)
         props.struct.psia = 0.003;
         props.struct.B = 31;
     end
+    % Default wind values
+    if not(isfield(props, 'wind'))
+        props.wind.U = 20;
+        props.wind.vrs = logspace(log10(0.1), log10(20), 25);
+        props.wind.amplitudes = [1:2:5];
+        props.wind.samplingFreq = 100;
+        props.wind.deltaT = 1/props.wind.samplingFreq;
+        props.wind.Nsteps = (props.struct.B*max(props.wind.vrs)/props.wind.U)/props.wind.deltaT;
+        props.wind.movType = 'H';        
+    end
+    
+    % Default network values
+    if ~isfield(props, 'net'); props.net = struct; end
+    if ~isfield(props.net, 'winLen'); props.net.winLen = 0.1; end
+    
+    % Menu flag
     flags.exitDatasetMenu = 0;
     
     
@@ -46,37 +47,39 @@ function props = setBWindProps(props)
             case 1
                 dispHeader()
                 props.wind.vrs = input('New reduced velicities, in Matlab array format: ');
-                if isempty(props.wind.vrs); props.wind.vrs = 2:2:50; end
+                if isempty(props.wind.vrs); props.wind.vrs = logspace(log10(0.1), log10(50), 25); end
+                props.wind.Nsteps = (props.struct.B*max(props.wind.vrs)/props.wind.U)/props.wind.deltaT;
                 flags.exitDatasetMenu = 0;
             case 2
                 dispHeader()
                 props.wind.amplitudes = input('New rotation amplitudes, in Matlab array format: ');
-                if isempty(props.wind.amplitudes); props.wind.amplitudes = 1:6; end
+                if isempty(props.wind.amplitudes); props.wind.amplitudes = 1:2:5; end
                 flags.exitDatasetMenu = 0;
             case 3
                 dispHeader()
                 props.wind.Nsteps = input('New number of time steps: ');
-                if isempty(props.wind.Nsteps); props.wind.Nsteps = 500; end
+                if isempty(props.wind.Nsteps)
+                    props.wind.Nsteps = (props.struct.B*max(props.wind.vrs)/props.wind.U)/props.wind.deltaT;
+                else
+                    props.wind.deltaT = (props.struct.B*max(props.wind.vrs)/props.wind.U)/props.wind.Nsteps;
+                    props.wind.samplingFreq = 1/props.wind.deltaT;
+                end
                 flags.exitDatasetMenu = 0;
             case 4
                 dispHeader()
-                props.wind.U = input('New wind speed: ');
+                props.wind.U = input('New wind speed [m/s]: ');
                 if isempty(props.wind.U); props.wind.U = 20; end
                 flags.exitDatasetMenu = 0;
             case 5
                 dispHeader()
-                props.struct.B = input('New chord length: ');
+                props.struct.B = input('New chord length [m]: ');
                 if isempty(props.struct.B); props.struct.B = 31; end
                 flags.exitDatasetMenu = 0;
             case 6
                 dispHeader()
-                ansInp = input('New cycle percetage to use as input: ');
+                ansInp = input('New cycle percetage to use as input [%]: ');
                 if isempty(ansInp); ansInp = 10; end
-                if ansInp > 1
-                    props.net.winLen = ansInp/100;
-                else
-                    props.net.winLen = ansInp;
-                end 
+                props.net.winLen = ansInp/100;
                 flags.exitDatasetMenu = 0;                
             case 0
                 flags.exitDatasetMenu = 1;

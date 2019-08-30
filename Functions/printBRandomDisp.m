@@ -34,11 +34,14 @@ function printBRandomDisp()
         if length(fnames) == 1; rndDisp = rndDisp.(fnames{1}); end
         fnames = fieldnames(rndDisp);
         if any(strcmp(fnames,'V'))
+            % Get the sampling frequency
+            dispHeader()
+            netB.props.wind.oldU = netB.props.wind.U;
+            netB.props.wind.U = input(strcat('Input the wind speed [m/s]: #'));
             % Get the time derivative, if it doesn't exist
             if ~any(strcmp(fnames,'A'))
-                dispHeader()
-                Fs = input(strcat('Input the sampling frequency for the data acquisition [Hz]: #'));
-                Dt = 1/Fs; rndDisp.A = gradient(rndDisp.V)./Dt;
+                Fs = input(strcat('Input the sampling frequency for the data acquisition [Hz]: #')); Dt = 1/Fs; 
+                rndDisp.A = gradient(rndDisp.V)./Dt;
             end
             % Force the vectors to have the same length
             minLen = min([length(rndDisp.V) length(rndDisp.A)]);
@@ -77,8 +80,8 @@ function printBRandomDisp()
     end
     
     % Now de-normalize the predictions
-    predVecCL = (predVecCL.*sum(abs(netB.props.wind.normCL)))-abs(netB.props.wind.normCL(1));
-    predVecCM = (predVecCM.*sum(abs(netB.props.wind.normCM)))-abs(netB.props.wind.normCM(1));
+    predVecCL = ((predVecCL.*sum(abs(netB.props.wind.normCL)))-abs(netB.props.wind.normCL(1))).*(netB.props.wind.U/netB.props.wind.oldU);
+    predVecCM = ((predVecCM.*sum(abs(netB.props.wind.normCM)))-abs(netB.props.wind.normCM(1))).*(netB.props.wind.U/netB.props.wind.oldU);
     
     % Center predictions
     predVecCL = predVecCL - predVecCL(1);
@@ -113,22 +116,26 @@ function printBRandomDisp()
     % Now plot the resulting CM and CL, in heave
     figure();
     subplot(2,1,1); hold on; grid on; box on; ax = gca; ax.GridLineStyle = ':'; ax.GridAlpha = 1;
-    plot(timeVec, predVecCL, '-k')
+    plot(timeVec, rndDisp.V(1:length(timeVec)).*(pi/netB.props.wind.U), '-', 'Color', [1 1 1 1].*0.2, 'DisplayName', 'QS Model')
+    plot(timeVec, predVecCL, '-k', 'DisplayName', 'Prediction')
     if ~isempty(Fs) 
         xlabel('$t$ [s]', 'Interpreter', 'latex')
     else
         xlabel('Time-Step [-]', 'Interpreter', 'latex')
     end
     ylabel('$C_{L}$ [-]', 'Interpreter', 'latex')
+    legend('Location', 'best')
     ytickformat('%1.2f');
     subplot(2,1,2); hold on; grid on; box on; ax = gca; ax.GridLineStyle = ':'; ax.GridAlpha = 1;
-    plot(timeVec, predVecCM, '-k')
+    plot(timeVec, rndDisp.V(1:length(timeVec)).*(0.25*pi/netB.props.wind.U), '-', 'Color', [1 1 1 1].*0.2, 'DisplayName', 'QS Model')
+    plot(timeVec, predVecCM, '-k', 'DisplayName', 'Prediction')
     if ~isempty(Fs) 
         xlabel('$t$ [s]', 'Interpreter', 'latex')
     else
         xlabel('Time-Step [-]', 'Interpreter', 'latex')
     end
     ylabel('$C_{M}$ [-]', 'Interpreter', 'latex')
+    legend('Location', 'best')
     ytickformat('%1.3f');
     if savePath ~= 0
         saveStr = sprintf('%s\\rndDisplacementResults', savePath);
@@ -139,38 +146,31 @@ function printBRandomDisp()
     
     % If we have information about frequency, we can plot the PSD
     if ~isempty(Fs)
-        % Get the length of the vector, make sure it's even
-        N = length(predVecCL);
-        if rem(N,2)~=0; N=N+1; end
         
-        % The frequency vector...
-        freqVec = linspace(0, Fs, N);
-        
-        % And we cut to show the first 10Hz only
-        fCut = ceil(N*10/Fs);
-        
-        % Calculate the PSD of the lift forces
-        PSD = fft(predVecCL);
-        PSD = PSD(1:N/2+1);
-        PSD = (1/(Fs^2*N)) * abs(PSD).^2;
-        PSD(2:end-1) = 2*PSD(2:end-1);
-        
-        % Plot them
+        % PSD of the lift coefficients
+        [~, psd_QS, ~, ~] = PSD(rndDisp.V(1:length(timeVec)).*(pi/netB.props.wind.U), 1/Fs);
+        [fVec, psd_NN, ~, ~] = PSD(predVecCL, 1/Fs);
         figure();
         subplot(2,1,1); hold on; grid on; box on; ax = gca; ax.GridLineStyle = ':'; ax.GridAlpha = 1;
-        plot(freqVec(2:fCut), 10*log10(PSD(2:fCut)), '-k', 'LineWidth', 0.6);
-        xlabel('$f$ [Hz]', 'interpreter', 'latex')
-        ylabel('$PSD_{CL}$ [dB/Hz]', 'interpreter', 'latex')
+        set(gca, 'XMinorGrid','off', 'YMinorGrid','off')
+        set(gca, 'YScale', 'log')
+        set(gca, 'XScale', 'log')
+        plot(fVec.*(2*pi*netB.props.struct.B/netB.props.wind.U), psd_QS.*(fVec/var(rndDisp.V(1:length(timeVec)).*(pi/netB.props.wind.U))), '-', 'Color', [1 1 1 1].*0.2, 'LineWidth', 0.6); 
+        plot(fVec.*(2*pi*netB.props.struct.B/netB.props.wind.U), psd_NN.*(fVec/var(predVecCL)), '-k', 'LineWidth', 0.4);
+        xlabel('$K$ [-]', 'interpreter', 'latex')
+        ylabel('$fS_{ww,C_L}/\sigma^2_{C_L}$ [-]', 'interpreter', 'latex')
         
-        % Repeat for the moment forces
-        PSD = fft(predVecCM);
-        PSD = PSD(1:N/2+1);
-        PSD = (1/(Fs^2*N)) * abs(PSD).^2;
-        PSD(2:end-1) = 2*PSD(2:end-1);
+        % Repeat for the moment 
+        [~, psd_QS, ~, ~] = PSD(rndDisp.V(1:length(timeVec)).*(0.25*pi/netB.props.wind.U), 1/Fs);
+        [fVec, psd_NN, ~, ~] = PSD(predVecCM, 1/Fs);
         subplot(2,1,2); hold on; grid on; box on; ax = gca; ax.GridLineStyle = ':'; ax.GridAlpha = 1;
-        plot(freqVec(2:fCut), 10*log10(PSD(2:fCut)), '-k', 'LineWidth', 0.6);
-        xlabel('$f$ [Hz]', 'interpreter', 'latex')
-        ylabel('$PSD_{CM}$ [dB/Hz]', 'interpreter', 'latex')
+        set(gca, 'XMinorGrid','off', 'YMinorGrid','off')
+        set(gca, 'YScale', 'log')
+        set(gca, 'XScale', 'log')
+        plot(fVec.*(2*pi*netB.props.struct.B/netB.props.wind.U), psd_QS.*(fVec/var(rndDisp.V(1:length(timeVec)).*(0.25*pi/netB.props.wind.U))), '-', 'Color', [1 1 1 1].*0.2, 'LineWidth', 0.6); 
+        plot(fVec.*(2*pi*netB.props.struct.B/netB.props.wind.U), psd_NN.*(fVec/var(predVecCM)), '-k', 'LineWidth', 0.4);
+        xlabel('$K$ [-]', 'interpreter', 'latex')
+        ylabel('$fS_{ww,C_M}/\sigma^2_{C_M}$ [-]', 'interpreter', 'latex')
         
         if savePath ~= 0
             saveStr = sprintf('%s\\rndDisplacementResults_PSD', savePath);

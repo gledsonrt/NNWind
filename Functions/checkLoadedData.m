@@ -47,8 +47,11 @@ function [data, props] = checkLoadedData(props)
             props.wind.samplingFreq = 1;
             props.wind.deltaT = 1/props.wind.samplingFreq;
             props.wind.Nsteps = length(data(1).CL);
-            if any(strcmp(fnames,'D')) && strcmp(props.modelType, 'SelfExcited')
+            if any(strcmp(fnames,'D'))
+                props.modelType = 'SelfExcited';
                 props.wind.movType = 'H';
+            else
+                props.modelType = 'Buffeting';
             end
             props.wind.U = 20;
         end
@@ -76,13 +79,13 @@ function [data, props] = checkLoadedData(props)
             dispHeader()
             disp('Set up the following parameters:');
             disp(strcat('   #1 Original sampling frequency [', num2str(props.wind.samplingFreq), 'Hz]'));
-            disp(strcat('   #2 Sampled steps for training [', num2str(props.wind.Nsteps), ']'));
-            disp(strcat('   #3 Wind speed [', num2str(props.wind.U), 'm/s]'));
-            disp(strcat('   #4 Chord length [', num2str(props.struct.B), 'm]'));
-            disp(strcat('   #5 Percentage of data to use as input [', num2str(100*props.net.winLen), '%]'));
-            disp(strcat('   #6 Number of cycles in the data [', num2str(props.net.numCycle), ']'));
+%             disp(strcat('   #2 Sampled steps for training [', num2str(props.wind.Nsteps), ']'));
+            disp(strcat('   #2 Wind speed [', num2str(props.wind.U), 'm/s]'));
+            disp(strcat('   #3 Chord length [', num2str(props.struct.B), 'm]'));
+            disp(strcat('   #4 Percentage of data to use as input [', num2str(100*props.net.winLen), '%]'));
+%             disp(strcat('   #5 Number of cycles in the data [', num2str(props.net.numCycle), ']'));
             if any(strcmp(fnames,'D')) && strcmp(props.modelType, 'SelfExcited')
-                disp(strcat('   #7 Forced vibration direction [', props.wind.movType, ']'));
+                disp(strcat('   #5 Forced vibration direction [', props.wind.movType, ']'));
             end
             disp(strcat('   #0 Generate data and return'));
             flags.exitDatasetMenu = input(strcat('Selection [', num2str(flags.exitDatasetMenu), ']: #'));
@@ -94,33 +97,33 @@ function [data, props] = checkLoadedData(props)
                     if isempty(props.wind.samplingFreq); props.wind.samplingFreq = 200; end
                     props.wind.deltaT = 1/props.wind.samplingFreq;
                     flags.exitDatasetMenu = 0;
+%                 case 2
+%                     dispHeader()
+%                     props.wind.Nsteps = input('New number of sampled steps: ');
+%                     if isempty(props.wind.Nsteps); props.wind.Nsteps = 500; end
+%                     flags.exitDatasetMenu = 0;
                 case 2
-                    dispHeader()
-                    props.wind.Nsteps = input('New number of sampled steps: ');
-                    if isempty(props.wind.Nsteps); props.wind.Nsteps = 500; end
-                    flags.exitDatasetMenu = 0;
-                case 3
                     dispHeader()
                     props.wind.U = input('New wind speed: ');
                     if isempty(props.wind.U); props.wind.U = 20; end
                     flags.exitDatasetMenu = 0;
-                case 4
+                case 3
                     dispHeader()
                     props.struct.B = input('New chord length: ');
                     if isempty(props.struct.B); props.struct.B = 31; end
                     flags.exitDatasetMenu = 0;
-                case 5
+                case 4
                     dispHeader()
                     ansInp = input('New cycle percetage to use as input: ');
                     if isempty(ansInp); ansInp = 10; end
                     props.net.winLen = ansInp/100;
                     flags.exitDatasetMenu = 0;      
-                case 6
-                    dispHeader()
-                    props.net.numCycle = input('Number of cycles in the input: ');
-                    if isempty(props.net.numCycle); props.net.numCycle = 1; end
-                    flags.exitDatasetMenu = 0;
-                case 7
+%                 case 6
+%                     dispHeader()
+%                     props.net.numCycle = input('Number of cycles in the input: ');
+%                     if isempty(props.net.numCycle); props.net.numCycle = 1; end
+%                     flags.exitDatasetMenu = 0;
+                case 5
                     if any(strcmp(fnames,'D')) && strcmp(props.modelType, 'SelfExcited')
                         dispHeader()
                         props.wind.movType = input('New cycle forced movement type (H/P): ', 's');
@@ -133,34 +136,35 @@ function [data, props] = checkLoadedData(props)
                     flags.exitDatasetMenu = 0;
             end
         end
-        
-        % If the data was loaded, we proceed with resampling
-        % We add additional 29 steps for the resampled version, in order to
-        % remove influence of aliasing due to filtering in the resample function
-        if isstruct(data) && props.wind.Nsteps ~= length(data(1).CL)
-            dispHeader()
-            disp('Resampling dataset...')
-            h = waitbar(0,'Starting...'); % Progress bar
-            set(findall(h,'type','text'),'Interpreter','none');
-            for i = 1:length(data)
-                if isfield(data, 'D')
-                    data(i).D = resample(data(i).D, props.wind.Nsteps+29, length(data(i).D));
-                    data(i).D = data(i).D(15:end-15);
-                end
-                if isfield(data, 'A')
-                    data(i).A = resample(data(i).A, props.wind.Nsteps+29, length(data(i).A));
-                    data(i).A = data(i).A(15:end-15);
-                end
-                data(i).V = resample(data(i).V, props.wind.Nsteps+29, length(data(i).V));
-                data(i).V = data(i).V(15:end-15);
-                data(i).CL = resample(data(i).CL, props.wind.Nsteps+29, length(data(i).CL));
-                data(i).CL = data(i).CL(15:end-15);
-                data(i).CM = resample(data(i).CM, props.wind.Nsteps+29, length(data(i).CM));
-                data(i).CM = data(i).CM(15:end-15);
-                waitbar(i/length(data),h,sprintf('Resampling dataset: %2.1f%% done',i/length(data)*100));
-            end
-            close(h);
-        end
+
+% Assuming that the pre-processing of the data is carried out before
+%         % If the data was loaded, we proceed with resampling
+%         % We add additional 29 steps for the resampled version, in order to
+%         % remove influence of aliasing due to filtering in the resample function
+%         if isstruct(data) && props.wind.Nsteps ~= length(data(1).CL)
+%             dispHeader()
+%             disp('Resampling dataset...')
+%             h = waitbar(0,'Starting...'); % Progress bar
+%             set(findall(h,'type','text'),'Interpreter','none');
+%             for i = 1:length(data)
+%                 if isfield(data, 'D')
+%                     data(i).D = resample(data(i).D, props.wind.Nsteps+29, length(data(i).D));
+%                     data(i).D = data(i).D(15:end-15);
+%                 end
+%                 if isfield(data, 'A')
+%                     data(i).A = resample(data(i).A, props.wind.Nsteps+29, length(data(i).A));
+%                     data(i).A = data(i).A(15:end-15);
+%                 end
+%                 data(i).V = resample(data(i).V, props.wind.Nsteps+29, length(data(i).V));
+%                 data(i).V = data(i).V(15:end-15);
+%                 data(i).CL = resample(data(i).CL, props.wind.Nsteps+29, length(data(i).CL));
+%                 data(i).CL = data(i).CL(15:end-15);
+%                 data(i).CM = resample(data(i).CM, props.wind.Nsteps+29, length(data(i).CM));
+%                 data(i).CM = data(i).CM(15:end-15);
+%                 waitbar(i/length(data),h,sprintf('Resampling dataset: %2.1f%% done',i/length(data)*100));
+%             end
+%             close(h);
+%         end
     
     
     end 

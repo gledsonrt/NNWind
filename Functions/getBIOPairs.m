@@ -12,7 +12,11 @@ function [data, props] = getBIOPairs(props)
         for i = 1:length(props.wind.vrs)
             vr = props.wind.vrs(i);
             % Delta T is calculated according to selected number of time-steps
-            dt = (props.struct.B*vr)/(props.wind.U*props.wind.Nsteps);
+            % dt = (props.struct.B*vr)/(props.wind.U*props.wind.Nsteps);
+            
+            % Get a fixed delta T
+            dt = props.wind.deltaT;
+            
             % We add a few time-steps to account for the network's sliding window procedure
             Nstep = ceil(props.wind.Nsteps*(1+props.net.winLen+0.05));
             [~, ~, CL, CM, V, A, ~] = getBFlatPlateData(props.wind.U, props.struct.B, vr, amplitude, dt, Nstep);

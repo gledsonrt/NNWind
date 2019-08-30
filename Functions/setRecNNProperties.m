@@ -7,12 +7,12 @@ function props = setRecNNProperties(props, totalSamples)
             props.net.type = 'Bi-Directional LSTM';
             props.net.LR = 1e-4;
             props.net.LRDrop = 0.975;
-            props.net.epochs = 500;
-            props.net.hiddenLayerNeurons = 100;
+            props.net.epochs = 300;
+            props.net.hiddenLayerNeurons = 50;
         else
             props.net.type = 'LSTM';
             props.net.LR = 7.5e-4;
-            props.net.LRDrop = 0.985;
+            props.net.LRDrop = 0.98;
             props.net.hiddenLayerNeurons = 50;
             props.net.epochs = 100;
         end

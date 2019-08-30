@@ -228,8 +228,8 @@ function printCoupledAnalysis()
         end
                        
         % Calculate forces and store results
-        P(i,1) = -(SE_L_H(i) + SE_L_P(i))*(1/2*rho*U*U*B) - (B_L(i))*(1/2*rho*U*U*B);
-        P(i,2) = (SE_M_H(i) + SE_M_P(i))*(1/2*rho*U*U*B*B) + (B_M(i))*(1/2*rho*U*U*B*B);
+        P(i,1) = -(SE_L_H(i) + SE_L_P(i))*(1/2*rho*U*U*B) - (B_L(i))*(1/2*rho*U*U*B)*(U/netB.props.wind.U);
+        P(i,2) = (SE_M_H(i) + SE_M_P(i))*(1/2*rho*U*U*B*B) + (B_M(i))*(1/2*rho*U*U*B*B)*(U/netB.props.wind.U);
         
         % Integrate next time-steps
         [UVec(i+1,:),UVecDot(i+1,:),UVec2Dot(i+1,:)] = NewmarkSDof(P(i,:), UVec(i,:), UVecDot(i,:), UVec2Dot(i,:), beta, gamma, Dt, M, C, K);
@@ -275,7 +275,7 @@ function printCoupledAnalysis()
     subplot(2,1,1); hold on; grid on; box on; ax = gca; ax.GridLineStyle = ':'; ax.GridAlpha = 1;
     plot(timeVec, results.FL./1000, '-k')
     xlabel('$t$ [s]', 'Interpreter', 'latex')
-    ylabel('$F_{L}$ k[N]', 'Interpreter', 'latex')
+    ylabel('$F_{L}$ [kN]', 'Interpreter', 'latex')
     subplot(2,1,2); hold on; grid on; box on; ax = gca; ax.GridLineStyle = ':'; ax.GridAlpha = 1;
     plot(timeVec, results.FM./1000, '-k')
     xlabel('$t$ [s]', 'Interpreter', 'latex')
@@ -294,9 +294,9 @@ function printCoupledAnalysis()
     xlabel('$t$ [s]', 'Interpreter', 'latex')
     ylabel('$h$ [m]', 'Interpreter', 'latex')
     subplot(2,1,2); hold on; grid on; box on; ax = gca; ax.GridLineStyle = ':'; ax.GridAlpha = 1;
-    plot(timeVec, results.DP, '-k')
+    plot(timeVec, (180/pi).*results.DP, '-k')
     xlabel('$t$ [s]', 'Interpreter', 'latex')
-    ylabel('$\alpha$ [rad]', 'Interpreter', 'latex')
+    ylabel('$\alpha$ [deg]', 'Interpreter', 'latex')
     if savePath ~= 0
         saveStr = sprintf('%s\\coupledAnalysisDisplacements', savePath);
         PaperPos = get(gcf,'PaperPosition'); PaperPos(3) = 16; PaperPos(4) = 10;
